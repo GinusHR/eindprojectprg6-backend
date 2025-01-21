@@ -9,7 +9,7 @@ router.use(express.urlencoded({extended: true}));
 
 router.get('/', async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 20;
+        const limit = parseInt(req.query.limit) || 10;
         const page = parseInt(req.query.page) || 1;
         const skip = (page - 1) * limit;
 
@@ -59,59 +59,26 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    try {
-        if (req.body.method === 'SEED') {
+    if (req.body.method === 'SEED') {
+        try {
             if (req.body.reset === 1) {
                 await Transformer.deleteMany({});
             }
             const amount = req.body.amount
-
-            await Transformer.create({
-                name: 'Optimus Prime',
-                faction: 'Autobots',
-                description: 'Valiant leader of the Autobots'
-            }, {
-                name: 'Megatron',
-                faction: 'Decepticons',
-                description: 'Cruel leader of the Decepticons'
-            }, {
-                name: 'Jazz',
-                faction: 'Autobots',
-                description: 'The stylish lieutenant of the Autobots'
-            }, {
-                name: 'Starscream',
-                faction: 'Decepticons',
-                description: 'Cowardly second in command of the Decepticons'
-            }, {
-                name: 'Ironhide',
-                faction: 'Autobots',
-                description: 'Weapons expert of the Autobots'
-            }, {
-                name: 'Soundwave',
-                faction: 'Decepticons',
-                description: 'Clever and stealty Decepticons loyalist'
-            }, {
-                name: 'Bumblebee',
-                faction: 'Autobots',
-                description: 'Young and eager Autobot scout'
-            }, {
-                name: 'Shockwave',
-                faction: 'Decepticons',
-                description: 'Icecold scientist/doctor for the Decepticons'
-            }, {
-                name: 'Ratchet',
-                faction: 'Autobots',
-                description: 'Veteran medic of the Autobots'
-            }, {
-                name: 'Blitzwing',
-                faction: 'Decepticons',
-                description: 'Agressive triple changer, eagerly serving the Decepticons'
-            });
-
+            for (let i = 0; i < amount; i++) {
+                await Transformer.create({
+                    name: 'Optimus Prime',
+                    faction: 'Autobots',
+                    description: 'Valiant leader of the Autobots'
+                });
+            }
             res.json({succes: 'You did it!'});
-        } else {
+        }  catch (error) {
+            res.status(400).json({error: error.message});
 
-
+        }
+    } else {
+        try {
             const {name, faction, description} = req.body;
             await Transformer.create({
                 name: name,
@@ -119,11 +86,12 @@ router.post('/', async (req, res) => {
                 description: description
             });
             res.status(201).json({succes: true});
-        }
-    } catch (error) {
-        res.status(400).json({error: error.message});
+        } catch (error) {
+            res.status(400).json({error: error.message});
 
+        }
     }
+
 
 });
 

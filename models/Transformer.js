@@ -14,7 +14,7 @@ const transformersSchema = new mongoose.Schema(
                         href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers/${ret._id}`
                     },
                     collection: {
-                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/tranformers`
+                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers`
                     }
                 }
                 delete ret._id
