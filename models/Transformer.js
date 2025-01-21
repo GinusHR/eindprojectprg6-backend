@@ -11,10 +11,10 @@ const transformersSchema = new mongoose.Schema(
             transform: (doc, ret) => {
                 ret._links = {
                     self: {
-                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/notes/${ret._id}`
+                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers/${ret._id}`
                     },
                     collection: {
-                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/notes`
+                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/tranformers`
                     }
                 }
                 delete ret._id

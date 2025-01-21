@@ -22,10 +22,10 @@ router.get('/', async (req, res) => {
             "items": transformers,
             "_links": {
                 "self": {
-                    "href": `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/notes`
+                    "href": `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers`
                 },
                 "collection": {
-                    "href": `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/notes`
+                    "href": `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers`
                 }
             }, pagination: {
                 currentPage: page,
@@ -44,11 +44,11 @@ router.get('/', async (req, res) => {
                     previous: page > 1 ? {
                         page: page - 1,
                         href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers?page=${page - 1}&limit=${limit}`
-                    }: null ,
+                    } : null,
                     next: page < totalPages ? {
                         page: page + 1,
                         href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers?page=${page + 1}&limit=${limit}`
-                    }: null
+                    } : null
                 }
             }
         };
@@ -60,18 +60,71 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     try {
-        const {name, faction, description} = req.body;
-        await Transformer.create({
-            name: name,
-            faction: faction,
-            description: description
-        });
-        res.status(201).json({succes: true});
+        if (req.body.method === 'SEED') {
+            if (req.body.reset === 1) {
+                await Transformer.deleteMany({});
+            }
+            const amount = req.body.amount
 
+            await Transformer.create({
+                name: 'Optimus Prime',
+                faction: 'Autobots',
+                description: 'Valiant leader of the Autobots'
+            }, {
+                name: 'Megatron',
+                faction: 'Decepticons',
+                description: 'Cruel leader of the Decepticons'
+            }, {
+                name: 'Jazz',
+                faction: 'Autobots',
+                description: 'The stylish lieutenant of the Autobots'
+            }, {
+                name: 'Starscream',
+                faction: 'Decepticons',
+                description: 'Cowardly second in command of the Decepticons'
+            }, {
+                name: 'Ironhide',
+                faction: 'Autobots',
+                description: 'Weapons expert of the Autobots'
+            }, {
+                name: 'Soundwave',
+                faction: 'Decepticons',
+                description: 'Clever and stealty Decepticons loyalist'
+            }, {
+                name: 'Bumblebee',
+                faction: 'Autobots',
+                description: 'Young and eager Autobot scout'
+            }, {
+                name: 'Shockwave',
+                faction: 'Decepticons',
+                description: 'Icecold scientist/doctor for the Decepticons'
+            }, {
+                name: 'Ratchet',
+                faction: 'Autobots',
+                description: 'Veteran medic of the Autobots'
+            }, {
+                name: 'Blitzwing',
+                faction: 'Decepticons',
+                description: 'Agressive triple changer, eagerly serving the Decepticons'
+            });
+
+            res.json({succes: 'You did it!'});
+        } else {
+
+
+            const {name, faction, description} = req.body;
+            await Transformer.create({
+                name: name,
+                faction: faction,
+                description: description
+            });
+            res.status(201).json({succes: true});
+        }
     } catch (error) {
         res.status(400).json({error: error.message});
 
     }
+
 });
 
 router.options('/', (req, res) => {
@@ -97,7 +150,10 @@ router.put('/:id', async (req, res) => {
     try {
         const editTransformer = req.body;
         const {id} = req.params;
-        const updatedTransformer = await Transformer.findByIdAndUpdate(id, editTransformer, {new: true, runValidators: true});
+        const updatedTransformer = await Transformer.findByIdAndUpdate(id, editTransformer, {
+            new: true,
+            runValidators: true
+        });
         if (!updatedTransformer) {
             return res.status(404).json('Note not found!');
         }
@@ -121,26 +177,6 @@ router.options('/:id', (req, res) => {
     res.setHeader('Allow', 'GET, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
     res.send();
-});
-
-router.post('/seed', async (req, res) => {
-    try {
-        if (req.body.reset === 1) {
-            await Transformer.deleteMany({});
-        }
-        const amount = req.body.amount
-
-        for (let i = 0; i < amount; i++) {
-            await Transformer.create({
-                name: faker.lorem.words({min: 2, max: 5}),
-                faction: faker.lorem.lines({min: 1, max: 3}),
-                description: faker.person.fullName()
-            });
-        }
-        res.json({succes: 'You did it!'});
-    } catch (error) {
-        res.json({error: error.message});
-    }
 });
 
 export default router;
