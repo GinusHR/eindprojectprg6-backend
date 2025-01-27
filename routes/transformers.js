@@ -69,7 +69,8 @@ router.post('/', async (req, res) => {
                 await Transformer.create({
                     name: 'Optimus Prime',
                     faction: 'Autobots',
-                    description: 'Valiant leader of the Autobots'
+                    description: 'Valiant leader of the Autobots',
+                    favorite: 'false'
                 });
             }
             res.json({succes: 'You did it!'});
@@ -83,7 +84,8 @@ router.post('/', async (req, res) => {
             await Transformer.create({
                 name: name,
                 faction: faction,
-                description: description
+                description: description,
+                favorite: 'false'
             });
             res.status(201).json({succes: true});
         } catch (error) {
@@ -141,9 +143,23 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+router.patch('/:id', async (req,res) =>{
+    try {
+        const {id} = req.params;
+        const {favorite} = req.body;
+        const transformer = await Transformer.findByIdAndUpdate(id, {favorite: favorite},  { new: true, runValidators: true });
+        if (!transformer) {
+            return res.status(404).json('Note not found!');
+        }
+        res.status(200).json({succes: transformer});
+    } catch (error) {
+        res.status(400).json({error: error.message})
+    }
+});
+
 router.options('/:id', (req, res) => {
-    res.setHeader('Allow', 'GET, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
+    res.setHeader('Allow', 'GET, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, PATCH, DELETE, OPTIONS');
     res.send();
 });
 

@@ -5,6 +5,7 @@ const transformersSchema = new mongoose.Schema(
         name: {type: String, required: true},
         faction: {type: String, required: true},
         description: {type: String, required: true},
+        favorite: {type: Boolean, standard: false},
     },{
         toJSON: {
             virtuals: true,
