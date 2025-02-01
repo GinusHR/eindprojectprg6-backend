@@ -1,5 +1,4 @@
 import Transformer from "../models/Transformer.js";
-import {faker} from "@faker-js/faker";
 import express from "express";
 
 const router = express.Router();
@@ -9,14 +8,14 @@ router.use(express.urlencoded({extended: true}));
 
 router.get('/', async (req, res) => {
     try {
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 0;
         const page = parseInt(req.query.page) || 1;
-        const skip = (page - 1) * limit;
+        const skip = limit > 0 ? (page - 1) * limit : 0;
 
         const totalItems = await Transformer.countDocuments();
         const transformers = await Transformer.find({}).skip(skip).limit(limit);
 
-        const totalPages = Math.ceil(totalItems / limit);
+        const totalPages = limit > 0 ? Math.ceil(totalItems / limit) : 1;
 
         const collection = {
             "items": transformers,
@@ -27,15 +26,16 @@ router.get('/', async (req, res) => {
                 "collection": {
                     "href": `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers`
                 }
-            }, pagination: {
-                currentPage: page,
+            },
+            pagination: {
+                currentPage: limit > 0 ? page : 1,
                 currentItems: transformers.length,
                 totalPages: totalPages,
                 totalItems: totalItems,
-                _links: {
+                _links: limit > 0 ? {
                     first: {
                         page: 1,
-                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers?page=${page}&limit=${limit}`
+                        href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers?page=1&limit=${limit}`
                     },
                     last: {
                         page: totalPages,
@@ -49,14 +49,16 @@ router.get('/', async (req, res) => {
                         page: page + 1,
                         href: `${process.env.BASE_URL}:${process.env.EXPRESS_PORT}/transformers?page=${page + 1}&limit=${limit}`
                     } : null
-                }
+                } : null
             }
         };
+
         res.status(200).json(collection);
     } catch (error) {
-        res.status(400).json({error: error.message});
+        res.status(400).json({ error: error.message });
     }
 });
+
 
 router.post('/', async (req, res) => {
     if (req.body.method === 'SEED') {
@@ -70,7 +72,7 @@ router.post('/', async (req, res) => {
                     name: 'Optimus Prime',
                     faction: 'Autobots',
                     description: 'Valiant leader of the Autobots',
-                    favorite: 'false'
+                    favorite: false
                 });
             }
             res.json({succes: 'You did it!'});
@@ -85,7 +87,7 @@ router.post('/', async (req, res) => {
                 name: name,
                 faction: faction,
                 description: description,
-                favorite: 'false'
+                favorite: false
             });
             res.status(201).json({succes: true});
         } catch (error) {
@@ -93,8 +95,6 @@ router.post('/', async (req, res) => {
 
         }
     }
-
-
 });
 
 router.options('/', (req, res) => {
@@ -143,11 +143,14 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-router.patch('/:id', async (req,res) =>{
+router.patch('/:id', async (req, res) => {
     try {
         const {id} = req.params;
         const {favorite} = req.body;
-        const transformer = await Transformer.findByIdAndUpdate(id, {favorite: favorite},  { new: true, runValidators: true });
+        const transformer = await Transformer.findByIdAndUpdate(id, {favorite: favorite}, {
+            new: true,
+            runValidators: true
+        });
         if (!transformer) {
             return res.status(404).json('Note not found!');
         }
